@@ -1,0 +1,35 @@
+jang2023:
+  method: GA
+  authors: Joel Jang, Dongkeun Yoon, Sohee Yang, Sungmin Cha, Moontae Lee, Lajanugen Logeswaran, Minjoon Seo
+  title: Knowledge Unlearning for Mitigating Privacy Risks in Language Models
+  venue: ACL 2023
+  paper: references/GSO_Unlearn_meeting_idea_speech.pdf
+  implementation_note: Token-level negative log-likelihood is maximized on forget examples.
+liu2022:
+  method: GradDiff
+  authors: Bo Liu, Qiang Liu, Peter Stone
+  title: Continual Learning and Private Unlearning
+  venue: CoLLAs 2022
+  paper: references/liu22a.pdf
+  implementation_note: LLM adaptation uses forget ascent plus retain descent; the source paper motivates private forgetting with preservation, while its named exact method is CLPU-DER++.
+yao2024:
+  method: GA+KL
+  authors: Jin Yao, Eli Chien, Minxin Du, Xinyao Niu, Tianhao Wang, Zezhou Cheng, Xiang Yue
+  title: Machine Unlearning of Pre-trained Large Language Models
+  venue: ACL 2024
+  paper: references/2024.acl-long.457.pdf
+  implementation_note: Gradient ascent on forget data plus forward KL to the original model on retain data.
+zhang2024:
+  method: NPO
+  authors: Ruiqi Zhang, Licong Lin, Yu Bai, Song Mei
+  title: "Negative Preference Optimization: From Catastrophic Collapse to Effective Unlearning"
+  venue: COLM 2024
+  paper: references/2404.05868v2.pdf
+  implementation_note: Implements the paper's reference-ratio NPO objective (Equation 3), beta=0.1.
+fan2025:
+  method: SimNPO
+  authors: Chongyu Fan, Jiancheng Liu, Licong Lin, Jinghan Jia, Ruiqi Zhang, Song Mei, Sijia Liu
+  title: "Simplicity Prevails: Rethinking Negative Preference Optimization for LLM Unlearning"
+  venue: NeurIPS 2025
+  paper: references/NeurIPS-2025-simplicity-prevails-rethinking-negative-preference-optimization-for-llm-unlearning-Paper-Conference.pdf
+  implementation_note: Implements reference-free length-normalized SimNPO (Equation 4), gamma=0, with retain NLL regularization.

@@ -1,0 +1,7 @@
+common_config: config_common.yaml
+baseline:
+  method: ga
+  retain_weight: 0.0
+  beta: null
+  gamma: null
+  citation_key: jang2023

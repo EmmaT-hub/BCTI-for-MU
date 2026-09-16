@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.out
+*.err
+outputs/
+models/
+*.pt
+*.pth
+*.bin
+*.safetensors

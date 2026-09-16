@@ -1,0 +1,7 @@
+common_config: config_common.yaml
+baseline:
+  method: ga_kl
+  retain_weight: 1.0
+  beta: null
+  gamma: null
+  citation_key: yao2024

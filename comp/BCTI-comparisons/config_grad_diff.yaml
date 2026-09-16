@@ -1,0 +1,7 @@
+common_config: config_common.yaml
+baseline:
+  method: grad_diff
+  retain_weight: 1.0
+  beta: null
+  gamma: null
+  citation_key: liu2022

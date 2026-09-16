@@ -1,0 +1,59 @@
+pipeline_config: code/single_fact/config.yaml
+seed: 17
+
+# These blocks are copied from code/BCTI-main/config_early_stop.yaml.
+data_split:
+  fit_forget_variants: [factual, paraphrase, alias, reverse]
+  trace_forget_variants: [factual, reverse]
+  validation_forget_variants: [clue, reverse]
+  test_forget_variants: [clue, reverse]
+  add_causal_eval_probes: true
+  reject_answer_leakage: true
+  retain_variants: [factual, paraphrase, alias]
+  fit_prompt_prefixes:
+    - ""
+    - "Complete this factual statement: "
+    - "Answer with the missing value only. "
+    - "Knowledge question: "
+  min_known_fit_per_direction: 2
+  min_known_eval_per_direction: 2
+  fail_on_unmet_direction_quotas: false
+  trace_all_retain_relations: true
+
+evaluation:
+  min_forget_base_answer_score: 0.10
+  require_base_greedy_exact: true
+  tail_fraction: 0.4
+  constraints:
+    min_eligible_forget_prompts: 2
+    min_eligible_forget_directions: 2
+    min_eligible_forget_prompts_per_direction: 2
+    min_forget_relative_drop: 0.90
+    min_strong_forget_relative_drop: 0.75
+    min_direction_relative_drop: 0.90
+    min_strong_direction_relative_drop: 0.75
+    max_forget_worst_answer_score: 0.10
+    max_forget_answer_score_increase: 0.08
+    retain_kl_mean_budget: 0.10
+    retain_kl_tail_budget: 0.15
+    retain_kl_max_budget: 0.30
+    retain_max_drop: 0.05
+
+# Fixed comparison budget.
+training:
+  max_steps: 80
+  eval_every: 4
+  learning_rate: 1.0e-5
+  forget_batch_size: 2
+  retain_batch_size: 4
+  gradient_accumulation_steps: 1
+  max_grad_norm: 0.5
+  weight_decay: 0.0
+  betas: [0.9, 0.999]
+  adam_epsilon: 1.0e-8
+  warmup_steps: 4
+
+implementation:
+  parameterization: full
+  minimum_visible_gpus: 2
+  device_map: balanced

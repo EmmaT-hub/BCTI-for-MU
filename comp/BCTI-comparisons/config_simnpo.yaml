@@ -1,0 +1,7 @@
+common_config: config_common.yaml
+baseline:
+  method: simnpo
+  retain_weight: 0.1
+  beta: 3.0
+  gamma: 0.0
+  citation_key: fan2025

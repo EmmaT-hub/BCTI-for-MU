@@ -1,0 +1,7 @@
+common_config: config_common.yaml
+baseline:
+  method: npo
+  retain_weight: 0.0
+  beta: 0.1
+  gamma: null
+  citation_key: zhang2024

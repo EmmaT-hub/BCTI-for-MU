@@ -1,0 +1,52 @@
+common_config: config_common.yaml
+
+# RWKU contributes the NPO objective and LoRA parameterization.
+baseline:
+  method: npo_lora
+  beta: 0.1
+  # Lower values favor forgetting during checkpoint selection.
+  retain_tradeoff_weight: 2.0
+  citation_key: jin2024rwku
+
+implementation:
+  parameterization: causal_lora
+  minimum_visible_gpus: 1
+  device: cuda:0
+
+localization:
+  sites: [resid_pre, attn_out, mlp_out]
+  corrupt_strategies: [subject_unknown]
+  layer_count: 4
+  candidate_pool_size: 12
+  candidate_layers_per_direction: 6
+  min_layers_per_direction: 1
+  min_directional_causal_coverage: 0.33
+  causal_effect_threshold: 0.20
+  candidate_relative_floor: 0.50
+  robust_quantile: 0.5
+  gap_epsilon: 1.0e-8
+
+lora:
+  rank: 8
+  alpha: 16.0
+  dropout: 0.0
+  target_modules:
+    - attention.query_key_value
+    - attention.dense
+    - mlp.dense_h_to_4h
+    - mlp.dense_4h_to_h
+
+training:
+  max_steps: 80
+  eval_every: 4
+  early_dense_eval_steps: 12
+  learning_rate: 5.0e-5
+  forget_batch_size: 2
+  retain_batch_size: 4
+  gradient_accumulation_steps: 1
+  max_grad_norm: 0.5
+  weight_decay: 0.0
+  betas: [0.9, 0.999]
+  adam_epsilon: 1.0e-8
+  warmup_steps: 0
+  schedule: constant

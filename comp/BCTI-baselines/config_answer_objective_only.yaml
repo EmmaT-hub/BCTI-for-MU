@@ -1,0 +1,162 @@
+# Causal localization and causal-score optimization settings.
+pipeline_config: code/single_fact/config.yaml
+seed: 17
+# One evidence-backed main run: causal localization + noise-aware retain-primary PCGrad.
+run_modes: [pcgrad]
+
+data_split:
+  # The target fact is a relation, not a single answer direction.
+  fit_forget_variants: [factual, paraphrase, alias, reverse]
+  trace_forget_variants: [factual, reverse]
+  # Use independent forward and reverse probes without answer leakage.
+  validation_forget_variants: [clue, reverse]
+  test_forget_variants: [clue, reverse]
+  add_causal_eval_probes: true
+  reject_answer_leakage: true
+  retain_variants: [factual, paraphrase, alias]
+  # Apply exactly the same style augmentation to forget and retain training.
+  fit_prompt_prefixes:
+    - ""
+    - "Complete this factual statement: "
+    - "Answer with the missing value only. "
+    - "Knowledge question: "
+  # Global baseline-knowledge repair reserves both semantic directions in all partitions.
+  min_known_fit_per_direction: 2
+  min_known_eval_per_direction: 2
+  # Quotas remain a hard formal-success condition.
+  fail_on_unmet_direction_quotas: false
+  # Retain tracing spans every relation represented in fit.
+  trace_all_retain_relations: true
+
+localization:
+  # Layer discovery is rerun inside every independent task using raw fit prompts.
+  sites: [resid_pre, attn_out, mlp_out]
+  corrupt_strategies: [subject_unknown]
+  layer_count: 4
+  # Stage 1 is target-only causal eligibility.
+  candidate_pool_size: 12
+  candidate_layers_per_direction: 6
+  # Reserve causal capacity for both directions of the target relation before filling any remaining slots by the global.
+  min_layers_per_direction: 1
+  # A quota layer must causally restore at least one third of the traced prompts in its own direction.
+  min_directional_causal_coverage: 0.33
+  causal_effect_threshold: 0.20
+  candidate_relative_floor: 0.50
+  robust_quantile: 0.5
+  gap_epsilon: 1.0e-8
+
+causal_training:
+  # Use normalized activation restoration as the primary forget objective.
+  causal_score_weight: 1.0
+  # Cap the auxiliary answer gradient below the causal gradient.
+  auxiliary_forget_loss: bounded_ga_probability
+  answer_complement_weight: 1.0
+  max_answer_auxiliary_gradient_ratio: 0.0
+  # Apply the stronger answer auxiliary only to the safest half of the selected causal layers by fit-only retain.
+  auxiliary_safe_layer_fraction: 0.75
+  # Bound the answer auxiliary while keeping the causal gradient primary.
+  auxiliary_global_layer_floor_ratio: 0.50
+  # Allocate the fixed auxiliary cap toward the harder semantic direction.
+  answer_direction_min_cap_fraction: 0.65
+  answer_direction_ema_decay: 0.90
+  # Causal tracing remains the authority for both adapter placement and update strength.
+  layer_weight_floor: 0.50
+  layer_weight_power: 1.0
+  # Fit prompts are partitioned into optimization and untouched calibration subsets.
+  direction_calibration_fraction: 0.25
+  # Small fit sets need optimization support more than multiple calibration variants.
+  direction_calibration_max_per_direction: 1
+  preferred_optimization_prompts_per_direction: 2
+  direction_calibration_every: 4
+  direction_difficulty_power: 1.0
+  direction_weight_min: 0.5
+  direction_weight_max: 1.5
+  trace_direction_fallback_min_confidence: 0.0
+  hard_example_every: 2
+  # Normalize causal and answer hardness to comparable [0, 1] scales.
+  answer_hardness_weight: 0.75
+  causal_neighbor_retain_fraction: 0.75
+  causal_neighbor_pool_fraction: 0.5
+  # Reference KL remains active.
+  retain_answer_margin: 0.03
+  retain_answer_margin_weight: 1.25
+  # Apply retain-gradient conflict control only after candidate selection.
+  hybrid_retain_risk_quantile: 0.50
+  # Combine directional gradients using their configured weighted mean.
+  direction_gradient_policy: weighted_mean
+  # Ignore finite-precision retain gradients below 1% of a module's forget gradient when deciding projection/sign surgery.
+  retain_gradient_min_ratio: 0.01
+
+lora:
+  rank: 8
+  alpha: 16.0
+  dropout: 0.0
+  # Exact GPT-NeoX nn.Linear suffixes.
+  target_modules:
+    - attention.query_key_value
+    - attention.dense
+    - mlp.dense_h_to_4h
+    - mlp.dense_4h_to_h
+
+evaluation:
+  # Formal unlearning claims require the base model to greedily generate the entire answer.
+  min_forget_base_answer_score: 0.10
+  require_base_greedy_exact: true
+  # Use forget and retain metrics only for final checks and safe checkpoint ranking.
+  constraints:
+    min_eligible_forget_prompts: 2
+    min_eligible_forget_directions: 2
+    min_eligible_forget_prompts_per_direction: 2
+    min_forget_relative_drop: 0.90
+    min_strong_forget_relative_drop: 0.75
+    min_direction_relative_drop: 0.90
+    min_strong_direction_relative_drop: 0.75
+    max_forget_worst_answer_score: 0.10
+    max_forget_answer_score_increase: 0.08
+    retain_kl_mean_budget: 0.10
+    retain_kl_tail_budget: 0.15
+    retain_kl_max_budget: 0.30
+    retain_max_drop: 0.05
+  causal_audit:
+    split: test
+    layer_policy: original_bidirectional_top_candidate_layers
+    layer_count: 12
+    use_all_traced_sites: true
+    used_for_checkpoint_selection: false
+
+training:
+  max_steps: 80
+  eval_every: 4
+  # The retain-safe region is often crossed before step 4.
+  early_dense_eval_steps: 12
+  early_stop_min_steps: 32
+  no_improvement_patience_evals: 1000
+  causal_early_stop_threshold: 0.005
+  causal_early_stop_patience_evals: 3
+  # Require the causal threshold for stopping and checkpoint eligibility.
+  causal_gate_min_direction_relative_drop: 0.90
+  causal_gate_max_worst_answer_score: 0.10
+  # Tier nearby constraint violations before comparing weak-direction margins.
+  checkpoint_bottleneck_slack: 0.25
+  # Do not stop on f001/f004-style checkpoints that already erased the answer but visibly violate validation retain budgets.
+  causal_gate_require_retain_acceptable: true
+  learning_rate: 5.0e-5
+  forget_batch_size: 2
+  retain_batch_size: 4
+  retain_weight: 1.0
+  # Avoid norm matching when near-zero KL gradients would amplify numerical noise.
+  gradient_normalization: none
+  max_grad_norm: 0.5
+  weight_decay: 0.0
+  betas: [0.9, 0.999]
+  adam_epsilon: 1.0e-8
+  probability_epsilon: 1.0e-8
+  gradient_epsilon: 1.0e-12
+
+experiment_name: BCTI-main-ablation-answer-objective-only
+
+
+ablation:
+  name: answer_objective_only
+  localization_policy: bidirectional_causal
+  causal_score_role: localization_and_diagnostic_only

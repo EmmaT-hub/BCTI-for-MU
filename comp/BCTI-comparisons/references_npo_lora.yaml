@@ -1,0 +1,7 @@
+jin2024rwku:
+  method: NPO+LoRA
+  authors: Zhuoran Jin, Pengfei Cao, Chenhao Wang, Zhitao He, Hongbang Yuan, Jiachun Li, Yubo Chen, Kang Liu, Jun Zhao
+  title: "RWKU: Benchmarking Real-World Knowledge Unlearning for Large Language Models"
+  venue: NeurIPS 2024 Datasets and Benchmarks Track
+  paper: references/NeurIPS-2024-rwku-benchmarking-real-world-knowledge-unlearning-for-large-language-models-Paper-Datasets_and_Benchmarks_Track.pdf
+  implementation_note: Uses RWKU Appendix H.1 Equation (3), beta=0.1, with rank-8 alpha-16 LoRA; BCTI data, localization, adapter targets, update budget, and evaluation replace RWKU-specific model/data choices for a controlled comparison. The paper path is provenance metadata only and is never opened at runtime.

@@ -1,0 +1,96 @@
+model:
+  model_name: EleutherAI/pythia-6.9b-deduped
+  local_path: models/pythia-6.9b-deduped
+  device: cuda:0
+  dtype: bfloat16
+  local_files_only: true
+  tl_no_processing: true
+
+data:
+  facts_path: code/data/facts_small.jsonl
+
+eval:
+  top_k: 10
+  batch_size: 1
+
+tracing:
+  sites:
+    - resid_pre
+    - attn_out
+    - mlp_out
+  corrupt_strategy: subject_unknown
+  corrupt_strategies:
+    - subject_unknown
+    - context_unknown
+  max_examples:
+
+dpcu:
+  site: all
+  trace_top_k_paths: 72
+  top_k_paths: 72
+  max_cut_size: 28
+  retain_kl_budget: 0.10
+  # Hard retain budgets below remain unchanged.
+  retain_kl_weight: 0.5
+  retain_trace_penalty: 0.45
+  # Robust positive-only causal selection.
+  robust_quantile: 0.5
+  min_forget_restore: 0.001
+  min_forget_positive_fraction: 0.55
+  restore_effect_epsilon: 1.0e-6
+  consistency_weight: 0.5
+  max_retain_prob_drop: 0.05
+  cut_size_penalty: 0.0002
+  # Use moderate robustness weights while constructing the set.
+  forget_worst_weight: 2.0
+  forget_tail_weight: 1.0
+  forget_tail_fraction: 0.5
+  min_forget_base_prob: 0.01
+  max_forget_prob_increase: 0.08
+  forget_increase_weight: 25.0
+  search_variants:
+    - factual
+    - paraphrase
+    - alias
+  cut_strength: 0.75
+  cut_strength_sweep:
+    - 0.35
+    - 0.45
+    - 0.55
+    - 0.625
+    - 0.7
+    - 0.75
+    - 0.875
+    - 1.0
+    - 1.125
+    - 1.25
+    - 1.375
+    - 1.5
+    - 1.75
+    - 2.0
+    - 2.25
+    - 2.5
+    - 2.75
+    - 3.0
+  neutral_strategy: unknown_mean
+  target_prob_stop: 0.006
+
+breaker:
+  threshold: 0.5
+  lambda_fp: 2.0
+  lambda_fn: 2.0
+  learning_rate: 0.05
+  epochs: 300
+
+training:
+  output_dir: outputs/50-targets/pythia6.9b/baselines
+  learning_rate: 1.0e-5
+  max_steps: 300
+  retain_weight: 0.5
+  batch_size: 1
+  gradient_accumulation_steps: 4
+  ga_max_nll: 10.0
+  max_grad_norm: 0.5
+  adam_eps: 1.0e-4
+  trainable_last_layers: 8
+  wrong_answer: " unknown"

@@ -1,0 +1,75 @@
+extends: code/knowledge_group/base_config.yaml
+base_config: code/knowledge_group/base_config.yaml
+out_dir: outputs/50-targets/single_fact
+
+leakage_eval:
+  # Optimize and evaluate semantic leakage, not only the memorized wording.
+  forget_variants:
+    - factual
+    - paraphrase
+    - alias
+    - reverse
+    - clue
+    - multihop
+  retain_variants:
+    - factual
+    - paraphrase
+    - alias
+  # Retain prompts that the base model cannot answer do not provide a useful probability-preservation constraint.
+  min_retain_base_prob_for_search: 0.01
+
+group_strength_optimization:
+  enabled: false
+  group_by: base_id
+
+path_gate:
+  # This is a permissive causal-screening stage, not the final safety gate.
+  intervention_strengths: [0.01, 0.025, 0.05, 0.10, 0.20, 0.35]
+  min_forget_drop: 0.002
+  max_retain_kl: 0.08
+  max_retain_prob_drop: 0.12
+  min_specificity: 0.05
+  min_validated_candidates: 1
+
+cut_strength_sweep:
+  - 0.025
+  - 0.05
+  - 0.10
+  - 0.15
+  - 0.20
+  - 0.30
+  - 0.45
+  - 0.55
+  - 0.625
+  - 0.70
+  - 0.875
+  - 1.00
+  - 1.125
+  - 1.25
+  - 1.375
+  - 1.50
+  - 1.75
+  - 2.00
+  - 2.25
+  - 2.50
+  - 2.75
+  - 3.00
+
+selection:
+  min_forget_relative_drop: 0.90
+  max_forget_worst_cut_prob: 0.10
+  worst_weight: 8.0
+  tail_weight: 4.0
+  max_forget_prob_increase: 0.08
+  retain_kl_budget: 0.10
+  retain_max_drop: 0.05
+  retention_risk_weight: 4.0
+  cut_size_penalty: 0.001
+
+minimal_path_search:
+  enabled: true
+  candidate_limit: 24
+  max_paths: 10
+  pair_lookahead: true
+
+seed: 0
