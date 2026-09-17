@@ -56,7 +56,7 @@ required_files=(
   code/knowledge_group/pipeline.py
   code/single_fact/config.yaml
   code/knowledge_group/base_config.yaml
-  code/data/facts_small.jsonl
+  code/data/facts.jsonl
 )
 for required in "${required_files[@]}"; do
   if [[ ! -f "$required" ]]; then

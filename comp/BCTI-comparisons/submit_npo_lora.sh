@@ -57,7 +57,7 @@ required_files=(
   code/common/tl_pythia_loader.py
   code/single_fact/config.yaml
   code/knowledge_group/base_config.yaml
-  code/data/facts_small.jsonl
+  code/data/facts.jsonl
 )
 for required in "${required_files[@]}"; do
   [[ -f "${required}" ]] || { echo "[npo-lora] missing: ${PROJECT_DIR}/${required}" >&2; exit 4; }

@@ -25,7 +25,7 @@ required_files=(
   "comp/BCTI-comparisons/splits.py"
   "code/single_fact/config.yaml"
   "code/knowledge_group/base_config.yaml"
-  "code/data/facts_small.jsonl"
+  "code/data/facts.jsonl"
 )
 for file in "${required_files[@]}"; do
   [[ -f "${file}" ]] || { echo "[paper-baseline] missing: ${PROJECT_DIR}/${file}" >&2; exit 4; }
